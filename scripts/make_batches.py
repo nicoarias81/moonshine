@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""make_batches.py — corpus de transcripts → batches JSON.
+"""make_batches.py — transcript corpus → batches JSON.
 
-Escanea <root>/<source>/transcripts/<id>.txt, parsea el header
-(id/titulo/lang/chars/---) y emite batches de items
+Scans <root>/<source>/transcripts/<id>.txt, parses the header
+(id/title/lang/chars/---) and emits batches of items
 {"source", "id", "title", "chars"}.
 """
 import argparse
@@ -15,17 +15,17 @@ def parse_header(path: Path):
     try:
         text = path.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
-        print(f"warn: no se pudo leer {path}: {exc}", file=sys.stderr)
+        print(f"warn: could not read {path}: {exc}", file=sys.stderr)
         return None
     lines = text.splitlines()
     if len(lines) < 5 or lines[4].strip() != "---":
-        print(f"warn: header inválido en {path}", file=sys.stderr)
+        print(f"warn: invalid header in {path}", file=sys.stderr)
         return None
     item_id, title, lang, chars = lines[0].strip(), lines[1].strip(), lines[2].strip(), lines[3].strip()
     try:
         n = int(chars)
     except ValueError:
-        print(f"warn: chars no numérico en {path}: {chars!r}", file=sys.stderr)
+        print(f"warn: non-numeric char count in {path}: {chars!r}", file=sys.stderr)
         n = 0
     return {"source": path.parent.parent.name, "id": item_id,
             "title": title, "lang": lang, "chars": n}
@@ -33,16 +33,16 @@ def parse_header(path: Path):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--root", required=True, help="raíz del corpus")
-    ap.add_argument("--out", default="_batches.json", help="archivo de salida")
+    ap.add_argument("--root", required=True, help="corpus root")
+    ap.add_argument("--out", default="_batches.json", help="output file")
     ap.add_argument("--batch-size", type=int, default=10)
     ap.add_argument("--min-chars", type=int, default=0,
-                    help="saltar items con menos chars (0 = incluir todos)")
+                    help="skip items with fewer chars (0 = include all)")
     args = ap.parse_args()
 
     root = Path(args.root)
     if not root.is_dir():
-        sys.exit(f"no existe el corpus: {root}")
+        sys.exit(f"corpus does not exist: {root}")
 
     items = []
     for source_dir in sorted(p for p in root.iterdir() if p.is_dir()):
@@ -55,15 +55,15 @@ def main():
                 items.append(item)
 
     if not items:
-        sys.exit("no se encontraron transcripts")
+        sys.exit("no transcripts found")
 
     batches = [items[i:i + args.batch_size]
                for i in range(0, len(items), args.batch_size)]
     out = Path(args.out)
     out.write_text(json.dumps(batches, ensure_ascii=False, indent=1),
                    encoding="utf-8")
-    print(f"{len(items)} items de {len(set(i['source'] for i in items))} fuentes "
-          f"→ {len(batches)} batches ({args.batch_size}/batch) en {out}")
+    print(f"{len(items)} items from {len(set(i['source'] for i in items))} sources "
+          f"-> {len(batches)} batches ({args.batch_size}/batch) in {out}")
 
 
 if __name__ == "__main__":

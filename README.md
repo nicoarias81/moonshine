@@ -1,103 +1,106 @@
 # Moonshine
 
-Metodología reproducible para convertir un corpus de charlas/videos en una
-biblioteca de **artículos standalone** escritos por agentes, y de ahí en
-conocimiento destilado (skills, documentación, base para combinar por afinidad).
+Reproducible methodology for turning a corpus of talks/videos into a library
+of **standalone articles** written by agents, and from there into distilled
+knowledge (skills, documentation, affinity-based combinations).
 
-No está atado a ninguna conferencia ni dominio: sirve para cualquier corpus de
-material hablado (charlas, webinars, podcasts, cursos) que se quiera convertir
-en texto de calidad editorial.
+Not tied to any conference or domain: it works for any corpus of spoken
+material (talks, webinars, podcasts, courses) that you want to turn into
+editorial-quality text.
 
-## El pipeline
+## The pipeline
 
 ```mermaid
 flowchart LR
-    A[Fuentes: videos / audio] --> B[Transcripción STT]
-    B --> C[Corpus de transcripts<br/>header id/title/lang/chars]
-    C --> D[Batching<br/>~10 items por batch]
-    D --> E[Rondas paralelas de subagentes<br/>2 por ronda, 1 batch c/u]
-    E --> F[Verificación<br/>cobertura + voz + naming]
-    F -->|faltantes| E
-    F --> G[Biblioteca de artículos md]
-    G --> H[Combinar por afinidad<br/>→ skills / docs]
+    A[Sources: videos / audio] --> B[STT transcription]
+    B --> C[Transcript corpus<br/>header id/title/lang/chars]
+    C --> D[Batching<br/>~10 items per batch]
+    D --> E[Parallel subagent rounds<br/>2 per round, 1 batch each]
+    E --> F[Verification<br/>coverage + voice + naming]
+    F -->|missing| E
+    F --> G[Article library md]
+    G --> H[Combine by affinity<br/>→ skills / docs]
 ```
 
-### Principios
+### Principles
 
-1. **Artículo, no narración.** Cada pieza es el artículo de la charla: alguien
-   que no vio el video lo lee como pieza standalone y se lleva el contenido.
-   Prohibido el metalenguaje ("el ponente", "en esta charla").
-2. **Spec centralizada.** Un único archivo de spec (`spec/article-spec.md`) es
-   la referencia de formato. Cada subagente la lee ANTES de escribir y se lo
-   exige explícitamente en el dispatch.
-3. **Rondas chicas y verificadas.** 2 subagentes en paralelo por ronda, 1 batch
-   por subagente. Entre rondas: verificación automática + muestreo manual.
-   Los errores de formato se detectan a los ~20 artículos, no a los 1000.
-4. **Naming por contenido.** El nombre de archivo es el slug del título del
-   artículo (descriptivo, corto); el identificador del video vive en la línea
-   de metadatos interna como trazabilidad.
-5. **Trazabilidad absoluta.** Todo artículo referencia su transcript por id en
-   los metadatos. La verificación de cobertura es por id, no por nombre.
-6. **Modelo-agnóstico.** El pipeline no hardcodea proveedores ni claves.
-   Puede correr contra cualquier endpoint OpenAI-compatible (p. ej. los modelos
-   de [nan.builders](https://nan.builders)) o cualquier CLI de agente.
+1. **Article, not narration.** Every piece is the article OF the talk: someone
+   who never watched the video reads it as a standalone piece and gets the
+   content. Meta-language is forbidden ("the speaker", "in this talk").
+2. **Centralized spec.** A single spec file (`spec/article-spec.md`) is the
+   format reference. Every subagent reads it BEFORE writing, and the dispatch
+   prompt demands it explicitly.
+3. **Small verified rounds.** 2 subagents in parallel per round, 1 batch each.
+   Between rounds: automated verification + manual sampling. Format errors
+   surface at ~20 articles, not at 1000.
+4. **Content-based naming.** The filename is the slug of the article title
+   (descriptive, short); the video id lives in the internal metadata line as
+   traceability.
+5. **Absolute traceability.** Every article references its transcript by id in
+   the metadata. Coverage verification is by id, never by filename.
+6. **Language is a parameter, asked once.** Default article language is
+   **English**, but the orchestrator MUST ask the user which language the
+   writeups should use before dispatching the first round, and record the
+   choice in every dispatch prompt (`{{LANGUAGE}}`).
+7. **Model-agnostic.** The pipeline hardcodes no providers or keys. It can run
+   against any OpenAI-compatible endpoint or any agent CLI.
 
-## Estructura
+## Repository layout
 
 ```
 moonshine/
-├── README.md                  # este archivo
-├── AGENTS.md                  # manual del agente orquestador
-├── spec/article-spec.md       # spec de formato (fuente única de verdad)
+├── README.md                  # this file
+├── AGENTS.md                  # orchestrator agent manual
+├── spec/article-spec.md       # format spec (single source of truth)
 ├── skills/
-│   ├── writeup-author/        # skill del subagente escritor
-│   └── writeup-verify/        # skill del verificador
+│   ├── writeup-author/        # writer subagent skill
+│   └── writeup-verify/        # verifier skill
 ├── scripts/
-│   ├── make_batches.py        # corpus de transcripts → batches.json
-│   └── verify.py              # cobertura, naming, voz, metadatos
+│   ├── make_batches.py        # transcript corpus → batches.json
+│   └── verify.py              # coverage, naming, voice, metadata
 └── templates/
-    └── dispatch-prompt.md     # plantilla del prompt por batch
+    └── dispatch-prompt.md     # per-batch prompt template
 ```
 
-## Convención de transcripts
+## Transcript convention
 
-Cada fuente (evento/canal/serie) vive en un directorio; cada ítem es un `.txt`
-con header de 4 líneas y separador:
+Each source (event/channel/series) lives in a directory; each item is a `.txt`
+with a 4-line header and separator:
 
 ```
 <id>
-<titulo original>
+<original title>
 <lang>
-<chars>
+<char count>
 ---
-<cuerpo del transcript>
+<transcript body>
 ```
 
-- `<chars>` = cantidad de caracteres del cuerpo. Si es < 50 (prácticamente solo
-  música/sin habla), el artículo es breve e indica que no hay contenido hablado.
-- El escritor SIEMPRE salta el header: lee desde `---`.
+- `<chars>` = character count of the body. If < 50 (essentially music / no
+  speech), the article is brief and states there is no spoken content.
+- The writer ALWAYS skips the header: reads from `---` onward.
 
-## Uso rápido
+## Quick start
 
 ```bash
-# 1. Generar batches desde el corpus de transcripts
-python scripts/make_batches.py --root /ruta/corpus --out _batches.json --batch-size 10
+# 1. Build batches from the transcript corpus
+python scripts/make_batches.py --root /path/corpus --out _batches.json --batch-size 10
 
-# 2. Verificar el corpus de artículos producidos (en cualquier momento)
-python scripts/verify.py --root /ruta/corpus --batches _batches.json \
-    --banned 'el ponente|en esta charla|el orador|durante la charla'
+# 2. Verify the produced article corpus (any time)
+python scripts/verify.py --root /path/corpus --batches _batches.json            # English banned phrases (default)
+python scripts/verify.py --root /path/corpus --batches _batches.json --lang es  # Spanish banned phrases
 
-# 3. El orquestador despacha rondas según AGENTS.md, verifica entre rondas
-#    y registra progreso en _progress.json
+# 3. The orchestrator dispatches rounds per AGENTS.md, verifies between rounds
+#    and records progress in _progress.json
 ```
 
-## Lecciones incorporadas
+## Incorporated lessons
 
-Ver [AGENTS.md](AGENTS.md) § Lecciones: outputs zombie tras un reset, stops que
-llegan tarde, cambios de regla a mitad de ronda (steering), y el orden correcto
-reset → spec → redispatch.
+See [AGENTS.md](AGENTS.md) § Hard conventions: the id (not the slug) is the
+matching key, never trust remembered ids/titles, duplicate ids across files,
+and the metadata line is excluded from the voice scan.
 
-## Estado
+## Status
 
-Metodología en uso activo sobre un corpus real de ~1150 charlas. Los scripts y
-la spec se endurecen con cada ronda.
+Methodology in active use on a real corpus of ~1150 talks. Scripts and spec
+are hardened with every round.

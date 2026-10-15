@@ -1,55 +1,71 @@
-# Spec de artículo (formato definitivo)
+# Article spec (definitive format)
 
-**Concepto**: cada writeup es el ARTÍCULO de la charla — como si la charla se
-hubiera publicado como artículo técnico de revista. Un lector que NO vio el
-video lo lee como pieza standalone y se lleva el contenido completo.
+**Concept**: every writeup is the ARTICLE of the talk — as if the talk had
+been published as a technical magazine article. A reader who did NOT watch the
+video reads it as a standalone piece and gets the full content.
 
-## Voz (CRÍTICO)
+## Voice (CRITICAL)
 
-- El artículo es sobre el TEMA, no sobre el evento. Estilo Wired/Krebs/Phrack:
-  divulgativo-técnico denso, sin relleno.
-- PROHIBIDO cualquier metalenguaje de video/charla: "en esta charla",
-  "el ponente", "el orador dice", "la presentación comienza", "el autor
-  menciona", "durante el talk", "el video muestra".
-- PROHIBIDO narrar la estructura del material ("primero habla de X, luego de Y").
-- La estructura del artículo es la del ARTÍCULO, no la del video.
+- The article is about the TOPIC, not about the event. Wired/Krebs/Phrack
+  style: dense technical-popular writing, no filler.
+- FORBIDDEN: any video/talk meta-language — "in this talk", "the speaker",
+  "the presenter says", "the presentation begins", "the author mentions",
+  "during the talk", "the video shows". When writing in Spanish, the same rule
+  applies to its Spanish equivalents ("el ponente", "en esta charla", etc. —
+  full list in `scripts/verify.py --banned`).
+- FORBIDDEN: narrating the structure of the material ("first he talks about X,
+  then about Y").
+- The article's structure is the ARTICLE's structure, not the video's.
 
-## Estructura del archivo
+## Language (CRITICAL)
 
-1. `# <título editorial>` — sobre el tema, no el título original de la charla.
-2. Línea de metadatos (trazabilidad, única mención del material fuente):
-   `- **Video:** <id> · **Conferencia:** <source> · **Título original:** <title>`
-3. `## Resumen` — 2-3 párrafos: el problema, por qué importa, qué aporta.
-4. `## <título editorial>` × 2-6 — secciones con subtítulos propios del
-   artículo, que sigan la lógica del tema (no el orden del video).
-5. Opcional: cierre con ideas clave, consejos prácticos o implicaciones.
+- Default article language: **English**.
+- The orchestrator MUST ask the user which language the writeups should use
+  before dispatching the first round, and record the choice in the dispatch
+  prompt (`{{LANGUAGE}}`). One language per corpus/run — never mixed within a
+  corpus.
+- Technical terms stay in English regardless of the article language.
+- The writer uses exactly the language stated in the dispatch prompt. Any
+  accidental foreign-language artifact (a stray word from another language) is
+  a defect to fix before reporting.
 
-## Diagramas (Mermaid)
+## File structure
 
-- Formato: bloques fenced ` ```mermaid ` dentro del md. PROHIBIDO imágenes
-  (png/svg) y ASCII-art (salvo sketch de <5 líneas).
-- Incluir diagrama SOLO cuando la estructura importa: cadenas de 3+ pasos
-  encadenados, flujos de protocolo, arquitecturas con relaciones no lineales o
-  trust boundaries. Máximo 1-2 por artículo.
-- Un pipeline lineal va como lista numerada, NO como diagrama.
-- Tipos permitidos: `flowchart`, `sequenceDiagram`, `graph`. Chicos, leibles
-  a la primera.
+1. `# <editorial title>` — about the topic, not the talk's original title.
+2. Metadata line (traceability, the ONLY mention of the source material):
+   `- **Video:** <id> · **Conference:** <source> · **Original title:** <title>`
+3. `## Summary` — 2-3 paragraphs: the problem, why it matters, what it adds.
+4. `## <editorial title>` × 2-6 — sections with the article's own headings,
+   following the topic's logic (not the video's order).
+5. Optional: close with key takeaways, practical advice, or implications.
+   (Section headings follow the article's language; e.g. `Resumen` in Spanish.)
 
-## Nombre de archivo (CRÍTICO)
+## Diagrams (Mermaid)
 
-- El archivo NO se llama `<id>.md` sino `<slug-del-título>.md`, derivado del
-  TÍTULO del artículo.
-- Slug: minúsculas ASCII, solo letras/números/guiones, 3-6 palabras
-  descriptivas del CONTENIDO, corto. Ej: "Cazando credenciales en memoria con
-  Volatility 3" → `cazando-credenciales-volatility-3.md`.
-- El id SIEMPRE queda en la línea de metadatos interna; esa es la trazabilidad.
-- Si el archivo ya existe con otro nombre, renombrarlo; no dejar duplicados.
+- Format: fenced ` ```mermaid ` blocks inside the md. Images (png/svg) and
+  ASCII-art FORBIDDEN (except a <5-line sketch).
+- Include a diagram ONLY when structure matters: chains of 3+ linked steps,
+  protocol flows, architectures with non-linear relations or trust boundaries.
+  Maximum 1-2 per article.
+- A linear pipeline is a numbered list, NOT a diagram.
+- Allowed types: `flowchart`, `sequenceDiagram`, `graph`. Small, readable at
+  first glance.
 
-## Fidelidad y casos límite
+## Filename (CRITICAL)
 
-- TODO el contenido sale del transcript. NO inventar datos, cifras, nombres ni
-  herramientas que no aparezcan.
-- Si el transcript tiene < 50 chars (prácticamente solo música / sin habla):
-  artículo breve que lo indica, sin desarrollarlo.
-- Idioma por defecto del artículo: el definido en el dispatch (el corpus puede
-  mezclar idiomas; los términos técnicos se dejan en inglés).
+- The file is NOT named `<id>.md` but `<title-slug>.md`, derived from the
+  ARTICLE's title.
+- Slug: lowercase ASCII, letters/numbers/hyphens only, 3-6 descriptive words
+  of the CONTENT, short. Example: "Hunting in-memory credentials with
+  Volatility 3" → `hunting-credentials-volatility-3.md`.
+- The id ALWAYS stays in the internal metadata line; that is the traceability.
+- If a file already exists under another name for the same id, rename it; do
+  not leave duplicates.
+
+## Fidelity and edge cases
+
+- ALL content comes from the transcript. DO NOT invent data, figures, names,
+  or tools that do not appear in it.
+- If the transcript has < 50 chars (essentially music / no speech): a brief
+  article stating that, without developing it.
+- One article per batch item; no batch item may end up without an article.

@@ -1,23 +1,27 @@
-# Plantilla de dispatch por batch
+# Per-batch dispatch template
 
-Sustituir `{{N}}`, `{{ROOT}}` y `{{BATCHES}}`. Enviar 2 en paralelo por ronda.
+Substitute `{{N}}`, `{{ROOT}}`, `{{BATCHES}}` and `{{LANGUAGE}}` (the writeup
+language — moonshine default is English, but the orchestrator asks the user
+once per corpus). Send 2 in parallel per round.
 
 ---
 
-Escribí el writeup-artículo de CADA video del batch {{N}} siguiendo la spec.
+Write the writeup-article for EVERY video of batch {{N}} following the spec.
 
-Pasos:
+Steps:
 
-1. Leé PRIMERO `{{ROOT}}/spec/article-spec.md` y seguíla al pie de la letra
-   (formato artículo standalone, NO narración de charla; nombre de archivo =
-   slug del título, 3-6 palabras).
-2. Leé `{{BATCHES}}`; tomá el batch índice {{N}} (array de items
+1. Read FIRST `{{ROOT}}/spec/article-spec.md` and follow it to the letter
+   (standalone-article format, NO talk narration; filename = title slug,
+   3-6 words).
+2. Read `{{BATCHES}}`; take batch index {{N}} (array of items
    `{source, id, title, chars}`).
-3. Para cada item, leé el transcript
-   `{{ROOT}}/<source>/transcripts/<id>.txt` (salteá el header hasta `---`).
-4. Escribí el artículo en `{{ROOT}}/<source>/articles/<slug-del-título>.md`
-   con la estructura de la spec.
-5. Verificá que cada archivo exista antes de reportarlo.
+3. For each item, read the transcript
+   `{{ROOT}}/<source>/transcripts/<id>.txt` (skip the header up to `---`).
+4. Write the article to `{{ROOT}}/<source>/articles/<title-slug>.md` with the
+   spec's structure.
+5. **Language: {{LANGUAGE}}.** Write the ENTIRE article in that language.
+   Technical terms stay in English. Zero foreign-language artifacts.
+6. Verify every file exists before reporting it.
 
-Al final reportá JSON:
-`{"batch": {{N}}, "escritos": <M>, "faltantes": [], "archivos": [rutas]}`
+At the end report JSON:
+`{"batch": {{N}}, "written": <M>, "missing": [], "files": [paths]}`
