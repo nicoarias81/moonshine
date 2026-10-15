@@ -12,7 +12,7 @@ progreso. La verdad es el disco, no el reporte.
 
 ```bash
 python scripts/verify.py --root <corpus> --batches _batches.json \
-    --banned 'el ponente|la ponente|en esta charla|el orador|durante la charla|el speaker|la presentación comienza|el video muestra'
+    --art-dir articles --id-key id   # corpus distill: --art-dir writeups --id-key vid
 ```
 
 Chequea y reporta:
@@ -20,9 +20,12 @@ Chequea y reporta:
 1. **Cobertura**: cada id de batch aparece en los metadatos de exactamente un
    artículo. Faltantes → reencolar. Huérfanos (artículos con id fuera del
    corpus) → investigar (suelen ser outputs zombie).
-2. **Naming**: archivos llamados `<id>.md` → violación (deben ser slug).
-3. **Voz**: coincidencias de la lista `--banned`.
-4. **Metadatos**: artículos sin el id en la línea de metadatos → sin trazabilidad.
+2. **Duplicados**: mismo id en dos archivos → borrar el duplicado y conservar
+   el que tenga la metadata correcta (pasó con un vid repetido).
+3. **Naming**: archivos llamados `<id>.md` → violación (deben ser slug).
+4. **Voz**: coincidencias de la lista `--banned` (por línea, excluida la línea
+   de metadatos `- **Video:**` — el título original puede contenerlas).
+5. **Metadatos**: artículos sin el id en la línea de metadatos → sin trazabilidad.
 
 ## Manual (obligatorio, 1-2 artículos por ronda)
 

@@ -13,12 +13,14 @@ items de UN batch en artículos standalone.
 1. **Leé PRIMERO la spec** `spec/article-spec.md` del repo y seguíla al pie de
    la letra. Si el prompt del orquestador y la spec divergen, gana la spec.
 2. Leé el archivo de batches; tomá TU batch (índice que te dio el orquestador).
-   Cada item: `{source, id, title, chars}`.
+   Cada item: `{source, id, title, chars}` (el corpus distill usa
+   `{conf, vid, title, chars}` — usá las claves del archivo, no las recuerdes).
 3. Por cada item, leé el transcript
    `<root>/<source>/transcripts/<id>.txt` y **salteá el header hasta `---`**.
    El header (id/título/lang/chars) NO es contenido.
 4. Escribí el artículo en `<root>/<source>/articles/<slug-del-título>.md` con
-   la estructura, voz y naming de la spec.
+   la estructura, voz y naming de la spec (el corpus distill usa `writeups/`;
+   seguí las rutas que te pasó el orquestador).
 5. Verificá que cada archivo exista antes de reportarlo.
 
 ## Reglas de oro
@@ -28,6 +30,15 @@ items de UN batch en artículos standalone.
 - `chars < 50` → artículo breve indicando material sin contenido hablado.
 - Un diagrama Mermaid solo cuando la estructura lo justifica (ver spec).
 - Un artículo por item; ningún item del batch puede quedar sin artículo.
+- **El vid manda, no el slug**: antes de escribir, buscá si ya existe un
+  artículo con ese vid en sus metadatos (grep `**Video:** <vid>` sobre el
+  directorio de salida). Si existe, verificá que su metadata porte el título
+  original COMPLETO del item y no escribas un duplicado.
+- **Nunca confíes en vids o títulos recordados**: siempre re-leé el batch del
+  archivo. Un vid de memoria puede ser inválido (ya pasó).
+- Todo en español; cero artefactos en otros idiomas (ya se coló un アクセス).
+- Si el archivo destino ya existe y tu herramienta de escritura lo rechaza,
+  leelo primero y hacé un patch dirigido; nunca lo dejes a medias.
 
 ## Reporte
 
