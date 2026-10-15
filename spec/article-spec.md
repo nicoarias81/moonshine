@@ -33,7 +33,10 @@ video reads it as a standalone piece and gets the full content.
 
 1. `# <editorial title>` — about the topic, not the talk's original title.
 2. Metadata line (traceability, the ONLY mention of the source material):
-   `- **Video:** <id> · **Conference:** <source> · **Original title:** <title>`
+   `- **Video:** <id> · **URL:** https://youtu.be/<id> · **Conference:** <source> · **Original title:** <title>`
+   (include the URL whenever the id is a resolvable video link, e.g. YouTube;
+   omit it for non-video sources). The id must stay the first token after
+   `**Video:**` — verification parses it from there.
 3. `## Summary` — 2-3 paragraphs: the problem, why it matters, what it adds.
 4. `## <editorial title>` × 2-6 — sections with the article's own headings,
    following the topic's logic (not the video's order).
